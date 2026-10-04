@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+plugin="${XDG_DATA_HOME:-$HOME/.local/share}/flea-omadesign/plugin"
+if "$plugin/scripts/refresh.sh"; then
+  export FLEA_UI="${XDG_DATA_HOME:-$HOME/.local/share}/flea-omadesign/ui"
+else
+  echo 'flea-omadesign: the installed Flea UI changed; opening the packaged UI until the adapter is updated.' >&2
+  unset FLEA_UI
+fi
+exec /usr/bin/flea "$@"
