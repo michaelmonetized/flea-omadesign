@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+exec 9>"${XDG_RUNTIME_DIR:?}/flea-toggle.lock"
+flock 9
+active=$(hyprctl -j activewindow | jq -r '.address // ""')
+windows=$(hyprctl -j clients | jq -c '[.[] | select(.class == "com.thisisgm.flea")]')
+address=$(jq -r --arg active "$active" 'map(select(.address == $active))[0].address // .[0].address // empty' <<< "$windows")
+if [[ -z "$address" ]]; then
+  flea --gui "$@" >/dev/null 2>&1 &
+elif [[ "$address" == "$active" ]]; then
+  hyprctl eval "hl.dispatch(hl.dsp.window.close({ window = \"address:$address\" }))" >/dev/null
+else
+  hyprctl eval "hl.dispatch(hl.dsp.focus({ window = \"address:$address\" }))" >/dev/null
+fi
